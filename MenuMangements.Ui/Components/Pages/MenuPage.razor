@@ -1,0 +1,70 @@
+﻿@page "/menu/{id:int}"
+@using MenuMangements.Ui.Services.Abstraction
+@inject IMenuService MenuService
+@rendermode InteractiveServer
+
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12 text-center mb-4">
+            <img src="@menu?.Restaurant?.LogoUrl" width="200px" alt="Restaurant Logo" class="img-fluid" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-3">
+            <div class="list-group">
+                @foreach (var category in menu?.Categories ?? new List<Category>())
+                {
+                    <a href="javascript:;" @onclick="() => SelectCategory(category)"
+                       class="list-group-item list-group-item-action @(selectedCategory?.Id == category.Id ? "active" : "")">
+                        @category.Name
+                    </a>
+                }
+            </div>
+        </div>
+        <div class="col-md-9">
+            @if (selectedCategory != null)
+            {
+                @foreach (var item in selectedCategory.MenuItems)
+                {
+                    <div class="card mb-3">
+                        <div class="row g-0">
+                            <div class="col-md-4">
+                                <img src="@item.PictureUrl" class="img-fluid rounded-start" alt="@item.Name">
+                            </div>
+                            <div class="col-md-8">
+                                <div class="card-body">
+                                    <h5 class="card-title">@item.Name</h5>
+                                    <p class="card-text">@item.Description</p>
+                                    <p class="card-text"><small class="text-muted">Price: @item.Price.ToString("C")</small></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Menu menu;
+    private Category selectedCategory;
+
+    protected override async Task OnInitializedAsync()
+    {
+        menu = await MenuService.GetMenuById(Id);
+        if (menu.Categories.Count > 0)
+        {
+            selectedCategory = menu.Categories[0]; // Select the first category by default
+        }
+    }
+
+    private void SelectCategory(Category category)
+    {
+        selectedCategory = category;
+    }
+}
